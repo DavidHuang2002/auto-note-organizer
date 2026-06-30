@@ -16,7 +16,7 @@ if ! command -v perl &>/dev/null; then
   exit 1
 fi
 
-PROMPT="Organize all loose root notes per CLAUDE.md. Respect .organize-ignore and organize: false. Log to state/organize-log.md. Stop when done."
+PROMPT="Organize all loose root notes per CLAUDE.md into ideas/, questions/, plans/, learn/, journal/, writing/, or people/. Respect .organize-ignore and organize: false. Refile any notes still in retired projects/ or notes/ if encountered. Log to state/organize-log.md. Stop when done."
 
 # Redirect stdin so claude -p does not wait indefinitely in non-interactive runs.
 # acceptEdits avoids permission prompts that block cron/background use.

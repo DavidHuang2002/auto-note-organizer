@@ -1,6 +1,6 @@
 # Auto Note Organizer
 
-Thin harness for loop-engineering an Obsidian vault. The brain lives in the vault's `CLAUDE.md`; this repo is just how you trigger it.
+Thin harness for loop-engineering an Obsidian vault. The brain lives in the vault's `CLAUDE.md`; this repo holds the canonical rules plus trigger scripts.
 
 ## Vault
 
@@ -8,12 +8,38 @@ Thin harness for loop-engineering an Obsidian vault. The brain lives in the vaul
 ~/Library/Mobile Documents/iCloud~md~obsidian/Documents/auto-organize-vault/
 ```
 
+## Taxonomy
+
+| Folder | Use for |
+|--------|---------|
+| `ideas/` | Concepts, proposals, hypotheticals |
+| `questions/` | Open questions, wonderings |
+| `plans/` | Goals, intentions, future direction |
+| `learn/` | Topics, skills, books (not people) |
+| `journal/` | Daily life, reflection |
+| `writing/` | Drafts for an audience |
+| `people/` | Person-centric notes (CRM-lite) |
+
+Retired: `projects/`, `notes/`
+
 ## Quick start
 
-**Organize loose notes (Claude Code):**
+**Sync rules to iCloud vault (run after pulling this repo):**
+
+```bash
+./scripts/sync-vault-rules.sh
+```
+
+**Organize loose root notes (Claude Code):**
 
 ```bash
 ./scripts/organize.sh
+```
+
+**Reorganize all existing notes (legacy `projects/` / `notes/` + misfiled):**
+
+```bash
+./scripts/reorg-vault.sh
 ```
 
 Or manually:
@@ -44,10 +70,11 @@ Or use Claude Code / Cursor automations on the same prompt.
 
 | File | Location | Why |
 |------|----------|-----|
-| `CLAUDE.md` | **iCloud vault** | Claude Code reads rules from cwd |
+| `vault/CLAUDE.md` | **This repo** (canonical) | Version-controlled taxonomy & rules |
+| `CLAUDE.md` | **iCloud vault** | Claude Code reads rules from cwd — sync via script |
 | `.organize-ignore` | **iCloud vault** | Exclusion patterns |
 | `state/organize-log.md` | **iCloud vault** | Loop memory |
-| This repo | `~/Developer/personal/auto-note-organizer` | Trigger script + Cursor skill |
+| This repo | `~/Developer/personal/auto-note-organizer` | Trigger scripts + Cursor skill |
 
 ## Pin a note at root
 
