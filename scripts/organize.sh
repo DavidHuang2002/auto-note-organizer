@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/claude-headless.sh
+source "$SCRIPT_DIR/lib/claude-headless.sh"
+
 VAULT="${VAULT_PATH:-/Users/davidhuang/Library/Mobile Documents/iCloud~md~obsidian/Documents/auto-organize-vault}"
 TIMEOUT_SECS="${ORGANIZE_TIMEOUT_SECS:-600}"
 RUN_START=$(date +%s)
@@ -20,6 +24,14 @@ count_md_in() {
 
 count_root_loose_md() {
   find "$VAULT" -maxdepth 1 -name '*.md' -type f 2>/dev/null | wc -l | tr -d ' '
+}
+
+count_retired_md() {
+  local total=0
+  for dir in projects notes; do
+    total=$((total + $(count_md_in "$VAULT/$dir")))
+  done
+  echo "$total"
 }
 
 print_inventory() {
@@ -54,10 +66,17 @@ if [[ -f "$ORG_LOG" ]]; then
 fi
 
 LOOSE_BEFORE=$(count_root_loose_md)
+RETIRED_BEFORE=$(count_retired_md)
 print_inventory "Pre-organize inventory:"
 
+if [[ "$LOOSE_BEFORE" -eq 0 && "$RETIRED_BEFORE" -eq 0 ]]; then
+  log "Nothing to organize — skipping Claude"
+  log "=== organize.sh complete ($(( $(date +%s) - RUN_START ))s) ==="
+  exit 0
+fi
+
 if [[ "$LOOSE_BEFORE" -eq 0 ]]; then
-  log "No loose root notes to organize"
+  log "No loose root notes; checking retired folders ($RETIRED_BEFORE note(s))"
 fi
 
 cd "$VAULT"
@@ -73,27 +92,14 @@ if ! command -v perl &>/dev/null; then
   exit 1
 fi
 
-if CLAUDE_VERSION=$(claude --version 2>/dev/null); then
-  log "Claude CLI: $CLAUDE_VERSION"
-else
-  log "Claude CLI: found (version unknown)"
-fi
+claude_version_or_unknown
 
 PROMPT="Organize all loose root notes per CLAUDE.md into ideas/, questions/, plans/, learn/, journal/, writing/, or people/. Respect .organize-ignore and organize: false. Refile any notes still in retired projects/ or notes/ if encountered. Log to state/organize-log.md. Stop when done."
 
-log "Starting Claude organize (timeout: ${TIMEOUT_SECS}s)..."
 CLAUDE_START=$(date +%s)
 
-# Redirect stdin so claude -p does not wait indefinitely in non-interactive runs.
-# acceptEdits avoids permission prompts that block cron/background use.
-# ORGANIZE_TIMEOUT_SECS (default 600) kills a stuck run.
 set +e
-perl -e 'alarm shift; exec @ARGV' "$TIMEOUT_SECS" \
-  claude -p \
-    --permission-mode acceptEdits \
-    --no-session-persistence \
-    "$PROMPT" \
-  < /dev/null
+run_claude_headless "$VAULT" "$TIMEOUT_SECS" "$PROMPT" "organize"
 EXIT_CODE=$?
 set -e
 

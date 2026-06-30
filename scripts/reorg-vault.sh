@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+# shellcheck source=lib/claude-headless.sh
+source "$SCRIPT_DIR/lib/claude-headless.sh"
 VAULT="${VAULT_PATH:-/Users/davidhuang/Library/Mobile Documents/iCloud~md~obsidian/Documents/auto-organize-vault}"
 TIMEOUT_SECS="${REORG_TIMEOUT_SECS:-1800}"
 RUN_START=$(date +%s)
@@ -80,11 +83,7 @@ if ! command -v perl &>/dev/null; then
   exit 1
 fi
 
-if CLAUDE_VERSION=$(claude --version 2>/dev/null); then
-  log "Claude CLI: $CLAUDE_VERSION"
-else
-  log "Claude CLI: found (version unknown)"
-fi
+claude_version_or_unknown
 
 PROMPT="Full vault reorg per CLAUDE.md.
 
@@ -96,16 +95,10 @@ PROMPT="Full vault reorg per CLAUDE.md.
 6. Never delete note content. Log every move to state/organize-log.md with tag reorg.
 7. Stop when done."
 
-log "Starting Claude reorg (timeout: ${TIMEOUT_SECS}s)..."
 CLAUDE_START=$(date +%s)
 
 set +e
-perl -e 'alarm shift; exec @ARGV' "$TIMEOUT_SECS" \
-  claude -p \
-    --permission-mode acceptEdits \
-    --no-session-persistence \
-    "$PROMPT" \
-  < /dev/null
+run_claude_headless "$VAULT" "$TIMEOUT_SECS" "$PROMPT" "reorg"
 EXIT_CODE=$?
 set -e
 
