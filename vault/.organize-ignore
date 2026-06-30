@@ -1,0 +1,4 @@
+CLAUDE.md
+.organize-ignore
+state/**
+.cursor/**
