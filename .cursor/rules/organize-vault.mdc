@@ -1,0 +1,23 @@
+---
+description: Read vault CLAUDE.md before organizing or querying Obsidian notes
+alwaysApply: true
+---
+
+# Obsidian vault organize & query
+
+When the user asks to **organize**, **file**, **title**, or **query/ask about** their notes:
+
+1. **Read first** (in order):
+   - `/Users/davidhuang/Library/Mobile Documents/iCloud~md~obsidian/Documents/auto-organize-vault/CLAUDE.md`
+   - `.cursor/skills/organize-vault/SKILL.md` if you need the harness commands
+
+2. **Follow `CLAUDE.md`** as the source of truth — taxonomy, title rules, exclusions, logging.
+
+3. **Vault path** (iCloud):
+   `/Users/davidhuang/Library/Mobile Documents/iCloud~md~obsidian/Documents/auto-organize-vault`
+
+4. **Loose notes** = root-level `*.md` only. Respect `.organize-ignore` and `organize: false` frontmatter.
+
+5. **Never delete** notes. Move to `ideas/`, `projects/`, or `notes/` per taxonomy.
+
+6. **Scheduled organize**: `./scripts/organize.sh` runs Claude Code in the vault (loads `CLAUDE.md` automatically).
